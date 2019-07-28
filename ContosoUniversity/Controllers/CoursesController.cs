@@ -39,7 +39,7 @@ namespace ContosoUniversity.Controllers
 
             var course = await _context.Courses
                 .Include(c => c.Department)
-                .AsNoTracking() // add AsNoTracking calls in the Details and HttpGet Delete methods.
+                .AsNoTracking() // optimize the course details
                 .FirstOrDefaultAsync(m => m.CourseID == id);
             if (course == null)
             {
@@ -49,13 +49,19 @@ namespace ContosoUniversity.Controllers
             return View(course);
         }
 
-        // GET: Courses/Create
+        // deleting create method
+
+        // deleting the edit method 
+
+
+        // replaceing the create
         public IActionResult Create()
         {
             PopulateDepartmentsDropDownList();
             return View();
         }
 
+        //replacing create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CourseID,Credits,DepartmentID,Title")] Course course)
@@ -66,12 +72,11 @@ namespace ContosoUniversity.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            PopulateDepartmentsDropDownList(course.DepartmentID); 
+            PopulateDepartmentsDropDownList(course.DepartmentID);
             return View(course);
         }
 
-
-        // GET: Courses/Edit/5
+        //replacing edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -90,9 +95,7 @@ namespace ContosoUniversity.Controllers
             return View(course);
         }
 
-        // POST: Courses/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //add editpost
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPost(int? id)
@@ -125,6 +128,7 @@ namespace ContosoUniversity.Controllers
             PopulateDepartmentsDropDownList(courseToUpdate.DepartmentID);
             return View(courseToUpdate);
         }
+        //create drop down list
 
         private void PopulateDepartmentsDropDownList(object selectedDepartment = null)
         {
@@ -144,7 +148,7 @@ namespace ContosoUniversity.Controllers
 
             var course = await _context.Courses
                 .Include(c => c.Department)
-                .AsNoTracking() //// add AsNoTracking calls in the Details and HttpGet Delete methods.
+                 .AsNoTracking() // optemize the delete
                 .FirstOrDefaultAsync(m => m.CourseID == id);
             if (course == null)
             {

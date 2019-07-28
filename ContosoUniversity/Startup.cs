@@ -13,8 +13,8 @@ using ContosoUniversity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 
-// notes in dysktra7 we will learn about Update related data
-// I miss a step for some reason I am unable to finish it until i can meet teacher on monday.
+// notes in dysktra7 we will learn about Tutorial: Update related data - ASP.NET MVC with EF Core
+// fixing my mistake from last week
 namespace ContosoUniversity
 {
     public class Startup

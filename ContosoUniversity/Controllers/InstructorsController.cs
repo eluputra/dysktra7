@@ -24,6 +24,42 @@ namespace ContosoUniversity.Controllers
         public async Task<IActionResult> Index(int? id, int? courseID)
         {
             var viewModel = new InstructorIndexData();
+            viewModel.Instructors = await _context.Instructors
+                  .Include(i => i.OfficeAssignment)
+                  .Include(i => i.CourseAssignments)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(i => i.Department)
+                  .OrderBy(i => i.LastName)
+                  .ToListAsync();
+
+            if (id != null)
+            {
+                ViewData["InstructorID"] = id.Value;
+                Instructor instructor = viewModel.Instructors.Where(
+                    i => i.ID == id.Value).Single();
+                viewModel.Courses = instructor.CourseAssignments.Select(s => s.Course);
+            }
+
+            if (courseID != null)
+            {
+                ViewData["CourseID"] = courseID.Value;
+                var selectedCourse = viewModel.Courses.Where(x => x.CourseID == courseID).Single();
+                await _context.Entry(selectedCourse).Collection(x => x.Enrollments).LoadAsync();
+                foreach (Enrollment enrollment in selectedCourse.Enrollments)
+                {
+                    await _context.Entry(enrollment).Reference(x => x.Student).LoadAsync();
+                }
+                viewModel.Enrollments = selectedCourse.Enrollments;
+            }
+
+            return View(viewModel);
+        }
+
+        // the error occur on the below code I dont know what it is but when i try to copy and paste it again it works ! 
+        /* 
+        public async Task<IActionResult> Index(int? id, int? courseID)
+        {
+            var viewModel = new InstructorIndexData();
             viewModel.Instructors = await _context.Instructors // get instructor and added to view model
                   .Include(i => i.OfficeAssignment) // i am not really sure what is i mean is i == number of item?
                   .Include(i => i.CourseAssignments)
@@ -45,7 +81,7 @@ namespace ContosoUniversity.Controllers
                                                      //to it's empty or if there's more than one item
                 viewModel.Courses = instructor.CourseAssignments.Select(s => s.Course);
             }
-            
+
             if (courseID != null)
             {
                 ViewData["CourseID"] = courseID.Value;// add the value into course id
@@ -59,21 +95,8 @@ namespace ContosoUniversity.Controllers
             }
 
             return View(viewModel);
+        }*/
 
-            if (courseID != null)
-            {
-                ViewData["CourseID"] = courseID.Value;
-                var selectedCourse = viewModel.Courses.Where(x => x.CourseID == courseID).Single();
-                await _context.Entry(selectedCourse).Collection(x => x.Enrollments).LoadAsync();
-                foreach (Enrollment enrollment in selectedCourse.Enrollments)
-                {
-                    await _context.Entry(enrollment).Reference(x => x.Student).LoadAsync();
-                }
-                viewModel.Enrollments = selectedCourse.Enrollments;
-            }
-
-            return View(viewModel);
-        }
 
         // GET: Instructors/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -116,46 +139,55 @@ namespace ContosoUniversity.Controllers
         }
 
         // GET: Instructors/Edit/5
-        [HttpPost, ActionName("Edit")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPost(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var instructorToUpdate = await _context.Instructors
-                .Include(i => i.OfficeAssignment)
-                .FirstOrDefaultAsync(s => s.ID == id);
+            var instructor = await _context.Instructors.FindAsync(id);
+            if (instructor == null)
+            {
+                return NotFound();
+            }
+            return View(instructor);
+        }
 
-            if (await TryUpdateModelAsync<Instructor>(
-                instructorToUpdate,
-                "",
-                i => i.FirstMidName, i => i.LastName, i => i.HireDate, i => i.OfficeAssignment))
-            {// Updates the retrieved Instructor entity with values from the model binder. The TryUpdateModel overload enables you to whitelist 
-                if (String.IsNullOrWhiteSpace(instructorToUpdate.OfficeAssignment?.Location))// If the office location is blank, sets the Instructor.OfficeAssignment property to null so that the related row in the OfficeAssignment table will be deleted.
-                {
-                    instructorToUpdate.OfficeAssignment = null;
-                }
+        // POST: Instructors/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ID,LastName,FirstMidName,HireDate")] Instructor instructor)
+        {
+            if (id != instructor.ID)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
                 try
                 {
+                    _context.Update(instructor);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateException /* ex */)
+                catch (DbUpdateConcurrencyException)
                 {
-                    //Log the error (uncomment ex variable name and write a log.)
-                    ModelState.AddModelError("", "Unable to save changes. " +
-                        "Try again, and if the problem persists, " +
-                        "see your system administrator.");
+                    if (!InstructorExists(instructor.ID))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(instructorToUpdate);
+            return View(instructor);
         }
-
-        
-        
 
         // GET: Instructors/Delete/5
         public async Task<IActionResult> Delete(int? id)
