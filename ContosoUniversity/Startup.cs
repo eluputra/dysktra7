@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ContosoUniversity.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 
 // notes in dysktra7 we will learn about Tutorial: Update related data - ASP.NET MVC with EF Core
 // fixing my mistake from last week
