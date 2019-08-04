@@ -207,7 +207,7 @@ namespace ContosoUniversity.Controllers
 
             var instructorToUpdate = await _context.Instructors
                 .Include(i => i.OfficeAssignment)
-                .Include(i => i.CourseAssignments)
+                .Include(i => i.CourseAssignments) // including the course assignment 
                 .ThenInclude(i => i.Course)
                 .FirstOrDefaultAsync(s => s.ID == id);
 
@@ -235,7 +235,7 @@ namespace ContosoUniversity.Controllers
                 return RedirectToAction(nameof(Index));
             }
             UpdateInstructorCourses(selectedCourses, instructorToUpdate);
-            PopulateAssignedCourseData(instructorToUpdate);
+            PopulateAssignedCourseData(instructorToUpdate); // populate the course data
             return View(instructorToUpdate);
         }
 

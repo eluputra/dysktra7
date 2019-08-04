@@ -57,7 +57,7 @@ namespace ContosoUniversity.Controllers
         // replaceing the create
         public IActionResult Create()
         {
-            PopulateDepartmentsDropDownList();
+            PopulateDepartmentsDropDownList(); //method calls the PopulateDepartmentsDropDownList method without setting the selected item
             return View();
         }
 
@@ -72,7 +72,7 @@ namespace ContosoUniversity.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            PopulateDepartmentsDropDownList(course.DepartmentID);
+            PopulateDepartmentsDropDownList(course.DepartmentID); //HttpGet Edit method sets the selected item, based on the ID of the department that's already assigned to the course being edited
             return View(course);
         }
 
