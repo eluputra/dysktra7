@@ -133,9 +133,10 @@ namespace ContosoUniversity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("FirstMidName,HireDate,LastName,OfficeAssignment")] Instructor instructor, string[] selectedCourses)
         {
+            // HttpPost Create method adds each selected course to the CourseAssignments navigation property before it checks for validation errors and adds the new instructor to the database.
             if (selectedCourses != null)
             {
-                instructor.CourseAssignments = new List<CourseAssignment>();
+                instructor.CourseAssignments = new List<CourseAssignment>(); // add courses to the CourseAssignments navigation property you have to initialize the property as an empty collection:
                 foreach (var course in selectedCourses)
                 {
                     var courseToAdd = new CourseAssignment { InstructorID = instructor.ID, CourseID = int.Parse(course) };
@@ -162,11 +163,11 @@ namespace ContosoUniversity.Controllers
 
             var instructor = await _context.Instructors
                 //change the code in the HttpGet Edit method so that it loads the Instructor entity's OfficeAssignment navigation property and calls AsNoTracking:
-                .Include(i => i.OfficeAssignment)
-                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)
+                .Include(i => i.OfficeAssignment) // get office assignemnt
+                .Include(i => i.CourseAssignments).ThenInclude(i => i.Course)// include the course
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.ID == id);
-            if (instructor == null)
+            if (instructor == null)// if instuctor null return not found method
             {
                 return NotFound();
             }
@@ -200,17 +201,21 @@ namespace ContosoUniversity.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int? id, string[] selectedCourses) {  //replacing edit post
+            //Changes the method name to EditPost because the signature is now the 
+            //same as the HttpGet Edit method (the ActionName attribute specifies that the /Edit/ URL is still used).
             if (id == null)
             {
                 return NotFound();
             }
 
+            //
             var instructorToUpdate = await _context.Instructors
                 .Include(i => i.OfficeAssignment)
                 .Include(i => i.CourseAssignments) // including the course assignment 
                 .ThenInclude(i => i.Course)
                 .FirstOrDefaultAsync(s => s.ID == id);
 
+            //Gets the current Instructor entity from the database using eager loading for the OfficeAssignment navigation property
             if (await TryUpdateModelAsync<Instructor>(
                 instructorToUpdate,
                 "",
@@ -234,6 +239,8 @@ namespace ContosoUniversity.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            //updates the retrieved Instructor entity with values from the model binder
             UpdateInstructorCourses(selectedCourses, instructorToUpdate);
             PopulateAssignedCourseData(instructorToUpdate); // populate the course data
             return View(instructorToUpdate);
